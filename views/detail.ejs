@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title><%= course.Ten_Khoa_Hoc %> | EduManage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .course-header-bg { background-color: #222222; color: white; padding: 100px 0 120px 0; }
+        .tag-pill { background-color: #eff6ff; color: #2563eb; font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; display: inline-block; font-weight: bold;}
+        .rating-stars { color: #f59e0b; }
+        .check-list { list-style: none; padding: 0; margin-top: 20px;}
+        .check-list li { margin-bottom: 10px; font-size: 0.95rem; }
+        .check-list i { color: #10b981; margin-right: 10px; font-size: 1.1rem; }
+        .floating-card { background: white; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-top: -200px; position: relative; z-index: 10; padding: 25px; color: #333;}
+        .img-promo { border-radius: 6px; width: 100%; border: 1px solid #eee; margin-bottom: 15px;}
+        .price-current { color: #10b981; font-weight: 800; font-size: 2.2rem; line-height: 1;}
+        .nav-tabs .nav-link { color: #6b7280; font-weight: 600; border: none; border-bottom: 3px solid transparent; padding: 15px 20px; }
+        .nav-tabs .nav-link.active { color: #1e3a8a; border-bottom: 3px solid #1e3a8a; background: transparent; }
+        .content-box { background: white; border-radius: 8px; padding: 30px; border: 1px solid #e5e7eb; margin-top: 20px;}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg bg-white border-bottom fixed-top" style="height: 70px; font-size: 0.95rem;">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand text-primary fw-bold fs-4" href="/"><i class="fa-solid fa-graduation-cap me-2"></i>EduManage</a>
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item"><a class="nav-link text-dark fw-bold" href="/chuong-trinh-hoc">Chương trình học</a></li>
+                    
+                    <% if (user) { %>
+                        <li class="nav-item ms-2 me-2"><a class="nav-link text-dark fw-bold" href="/gio-hang"><i class="fa-solid fa-cart-shopping text-primary me-1"></i> Giỏ hàng</a></li>
+                        <li class="nav-item dropdown ms-3">
+                            <a class="nav-link fw-bold text-primary dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fa-solid fa-user-circle me-1"></i> <%= user.Ho_Ten %></a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <% if (user.Role === 'ADMIN') { %> <li><a class="dropdown-item" href="/admin">Trang Quản trị</a></li>
+                                <% } else { %> <li><a class="dropdown-item" href="/dashboard">Dashboard của tôi</a></li> <% } %>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fa-solid fa-right-from-bracket me-1"></i> Đăng xuất</a></li>
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item ms-3"><a class="btn btn-primary" style="background-color: #2e4a9e; border: none;" href="/login">Đăng nhập</a></li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="course-header-bg">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 pe-lg-5">
+                    <h1 class="fw-bold mb-3"><%= course.Ten_Khoa_Hoc %></h1>
+                    <div class="tag-pill mb-3">#Phần mềm online</div>
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="fw-bold text-warning me-2">4.9</span>
+                        <div class="rating-stars me-2"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></div>
+                        <span class="text-light opacity-75">(630 Đánh giá) 98,671 Học viên</span>
+                    </div>
+                    <ul class="check-list">
+                        <% if (course.Mo_Ta && course.Mo_Ta.trim() !== '') { %>
+                            <% course.Mo_Ta.split('\n').filter(line => line.trim() !== '').forEach(point => { %>
+                                <li><i class="fa-solid fa-square-check"></i> <%= point.trim() %></li>
+                            <% }); %>
+                        <% } else { %>
+                            <li><i class="fa-solid fa-square-check"></i> Nội dung khóa học đang được cập nhật.</li>
+                        <% } %>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row">
+            <div class="col-lg-8 mt-4">
+                <ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" href="#">Mục tiêu khóa học</a></li></ul>
+                <div class="content-box">
+                    <h5 class="fw-bold mt-2 mb-3">Lộ trình học tập chi tiết:</h5>
+                    <p class="text-muted" style="white-space: pre-line;"><%= course.Lo_Trinh || 'Đang cập nhật lộ trình.' %></p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="floating-card">
+                    <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80" alt="Promo" class="img-promo">
+                    <div class="fw-bold text-muted mb-1">Giá khóa học:</div>
+                    <div class="mb-4"><div class="price-current"><%= Number(course.Gia_Tien).toLocaleString() %>đ</div></div>
+
+                    <form action="/them-vao-gio/<%= course.MaKH %>" method="POST">
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold mb-2" style="background-color: #3b5998; border: none;">
+                            <i class="fa-solid fa-cart-plus me-2"></i> THÊM VÀO GIỎ HÀNG
+                        </button>
+                    </form>
+                    
+                    <button class="btn btn-outline-secondary w-100 py-2 fw-bold mb-4">Học thử miễn phí</button>
+                    <ul class="list-unstyled text-muted" style="font-size: 0.9rem;">
+                        <li class="mb-2"><i class="fa-solid fa-laptop me-2" style="width: 20px;"></i> Học trên mọi thiết bị</li>
+                        <li class="mb-2"><i class="fa-regular fa-clock me-2" style="width: 20px;"></i> Truy cập trọn đời</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const cartForms = document.querySelectorAll('form[action^="/them-vao-gio/"]');
+            cartForms.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault(); 
+                    const url = this.getAttribute('action');
+                    try {
+                        const response = await fetch(url, { method: 'POST' });
+                        if (response.redirected) { window.location.href = response.url; return; }
+                        const data = await response.json();
+                        Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true }).fire({ icon: data.status, title: data.message });
+                    } catch (error) { Swal.fire('Lỗi', 'Không thể kết nối đến máy chủ', 'error'); }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

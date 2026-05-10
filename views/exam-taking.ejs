@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đang làm bài: <%= exam.Ten_De %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background-color: #f1f5f9; font-family: 'Segoe UI', sans-serif; padding-top: 70px; }
+        .exam-header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: 70px; z-index: 1000; }
+        .question-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        .question-text { font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 15px;}
+        .answer-option { display: block; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: 0.2s;}
+        .answer-option:hover { background-color: #f8fafc; border-color: #94a3b8; }
+        .answer-option input[type="radio"] { margin-right: 10px; transform: scale(1.2); cursor: pointer;}
+        .answer-option:has(input[type="radio"]:checked) { background-color: #eff6ff; border-color: #3b82f6; font-weight: 600; color: #1d4ed8; }
+        .timer-box { background: #fff; border-radius: 10px; border: 2px solid #3b82f6; padding: 20px; text-align: center; position: sticky; top: 90px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .timer-text { font-size: 2.5rem; font-weight: 800; color: #1e3a8a; font-family: monospace;}
+    </style>
+</head>
+<body>
+    <div class="fixed-top exam-header d-flex align-items-center px-4">
+        <h4 class="fw-bold text-primary m-0"><i class="fa-solid fa-file-pen me-2"></i><%= exam.Ten_De %></h4>
+        <div class="ms-auto text-muted fw-bold">
+            <i class="fa-solid fa-user me-2"></i>Thí sinh: <%= user.Ho_Ten %>
+        </div>
+    </div>
+
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-lg-8">
+                <form id="examForm">
+                    <% questions.forEach((q, index) => { %>
+                        <div class="question-card" id="q-<%= index + 1 %>">
+                            <div class="question-text">
+                                <span class="badge bg-primary me-2">Câu <%= index + 1 %></span> <%= q.Noi_Dung %>
+                            </div>
+                            <div class="answers-group mt-3">
+                                <% if (q.DanhSachPhuongAn && q.DanhSachPhuongAn.length > 0) { %>
+                                    <% q.DanhSachPhuongAn.forEach(pa => { 
+                                        let chuCai = pa.substring(0, 1); // Lấy chữ A, B, C, D
+                                        let noiDungDapAn = pa.substring(3); // Cắt bỏ "A. " lấy nội dung
+                                    %>
+                                        <label class="answer-option">
+                                            <input type="radio" name="<%= q.MaCH %>" value="<%= chuCai %>"> 
+                                            <strong><%= chuCai %>.</strong> <%= noiDungDapAn %>
+                                        </label>
+                                    <% }) %>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }) %>
+                </form>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="timer-box">
+                    <div class="text-muted fw-bold text-uppercase small mb-2"><i class="fa-solid fa-stopwatch me-1"></i> Thời gian còn lại</div>
+                    <div class="timer-text" id="countdown">--:--</div>
+                    <hr>
+                    <div class="d-flex justify-content-between text-muted small mb-3">
+                        <span>Đã chọn đáp án: <b id="answeredCount" class="text-primary">0</b>/<%= questions.length %></span>
+                    </div>
+                    <button class="btn btn-primary w-100 py-3 fw-bold fs-5 shadow" id="btnSubmit"><i class="fa-solid fa-paper-plane me-2"></i>NỘP BÀI</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // --- CẬP NHẬT LOGIC NHẬN THỜI GIAN TỪ BACKEND ---
+        let timeData = '<%= exam.Tong_Thoi_Gian %>';
+        let totalMinutes = 60; 
+
+        // Nếu dữ liệu là dạng chuỗi (VD: "00:45:00")
+        if (timeData.includes(':')) {
+            let parts = timeData.split(':');
+            totalMinutes = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+        } 
+        // Nếu dữ liệu đã là con số chuẩn (VD: 45)
+        else if (!isNaN(parseInt(timeData, 10))) {
+            totalMinutes = parseInt(timeData, 10);
+        }
+
+        // Quy đổi ra giây để đếm ngược
+        let timeInSeconds = totalMinutes * 60; 
+        // ------------------------------------------------
+
+        const timerElement = document.getElementById('countdown');
+        const examForm = document.getElementById('examForm');
+
+        const timerInterval = setInterval(() => {
+            let minutes = Math.floor(timeInSeconds / 60);
+            let seconds = timeInSeconds % 60;
+            timerElement.textContent = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+            if (timeInSeconds <= 0) { clearInterval(timerInterval); submitExam(); }
+            timeInSeconds--;
+        }, 1000);
+
+        examForm.addEventListener('change', () => {
+            document.getElementById('answeredCount').textContent = examForm.querySelectorAll('input[type="radio"]:checked').length;
+        });
+
+        document.getElementById('btnSubmit').addEventListener('click', () => {
+            Swal.fire({
+                title: 'Xác nhận nộp bài?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Đồng ý nộp',
+                cancelButtonText: 'Làm tiếp'
+            }).then((result) => { if (result.isConfirmed) submitExam(); })
+        });
+
+        async function submitExam() {
+            clearInterval(timerInterval);
+            document.getElementById('btnSubmit').disabled = true;
+            document.getElementById('btnSubmit').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang chấm điểm...';
+
+            const formData = new FormData(examForm);
+            const answers = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/nop-bai/<%= exam.MaDe %>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(answers)
+                });
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    Swal.fire({
+                        title: 'ĐÃ NỘP BÀI!',
+                        html: `<h1 class="text-success fw-bold display-1 mt-3 mb-2">${result.score}</h1>
+                               <p class="fs-5 text-muted">Điểm của bạn</p>
+                               <hr><p class="fw-bold text-dark">Trả lời đúng: <span class="text-primary">${result.correct}</span> / ${result.total} câu</p>`,
+                        icon: 'success',
+                        allowOutsideClick: false
+                    }).then(() => { window.location.href = '/dashboard'; });
+                } else { Swal.fire('Lỗi', result.message, 'error'); }
+            } catch (error) { Swal.fire('Lỗi', 'Lỗi kết nối máy chủ', 'error'); }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chương trình học | EduManage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding-top: 70px; }
+        .navbar-custom { background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: 70px; font-weight: 500; font-size: 0.95rem; }
+        .navbar-brand { color: #1e3a8a !important; font-weight: 800; font-size: 1.6rem; letter-spacing: -0.5px; }
+        .nav-link { color: #4b5563 !important; margin: 0 10px; }
+        .nav-link:hover { color: #2563eb !important; }
+        .btn-login { background-color: #2e4a9e; color: white; border-radius: 6px; padding: 8px 24px; font-weight: 600; }
+        .page-header { background: linear-gradient(135deg, #e0e7ff 0%, #ffffff 100%); padding: 40px 0; border-bottom: 1px solid #e5e7eb; margin-bottom: 40px; }
+        .course-card { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden; transition: all 0.3s ease; height: 100%; padding: 15px; }
+        .course-card:hover { box-shadow: 0 10px 25px rgba(0,0,0,0.08); transform: translateY(-5px); }
+        .course-img { border-radius: 8px; width: 100%; height: 160px; object-fit: cover; margin-bottom: 15px; }
+        .course-title { font-size: 1.1rem; font-weight: 700; color: #1e3a8a; line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;}
+        .rating-box { color: #f59e0b; font-size: 0.85rem; margin-bottom: 10px; }
+        .rating-box span { color: #6b7280; margin-left: 5px; }
+        .tag-pill { background-color: #eff6ff; color: #2563eb; font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 15px; font-weight: 600;}
+        .price-current { color: #10b981; font-weight: 800; font-size: 1.2rem; }
+        .price-old { color: #9ca3af; text-decoration: line-through; font-size: 0.9rem; margin: 0 8px; }
+        .price-discount { background-color: #ef4444; color: white; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg fixed-top navbar-custom">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="/"><i class="fa-solid fa-graduation-cap me-2"></i>EduManage</a>
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item"><a class="nav-link text-primary fw-bold" href="/chuong-trinh-hoc">Chương trình học</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/de-thi">Đề thi online</a></li>
+                    
+                    <% if (user) { %>
+                        <li class="nav-item ms-2 me-2"><a class="nav-link text-dark fw-bold" href="/gio-hang"><i class="fa-solid fa-cart-shopping text-primary me-1"></i> Giỏ hàng</a></li>
+                        <li class="nav-item dropdown ms-3">
+                            <a class="nav-link fw-bold text-primary dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fa-solid fa-user-circle me-1"></i> <%= user.Ho_Ten %></a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <% if (user.Role === 'ADMIN') { %> <li><a class="dropdown-item" href="/admin">Trang Quản trị</a></li>
+                                <% } else { %> <li><a class="dropdown-item" href="/dashboard">Dashboard của tôi</a></li> <% } %>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/logout"><i class="fa-solid fa-right-from-bracket me-1"></i> Đăng xuất</a></li>
+                            </ul>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item ms-3"><a class="btn btn-login" href="/login">Đăng nhập</a></li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <div class="container">
+            <h2 class="fw-bold text-dark">Tất cả chương trình học</h2>
+            <p class="text-muted">Khám phá lộ trình học tập phù hợp nhất với bạn</p>
+        </div>
+    </div>
+
+   <div class="container pb-5">
+    <div class="row g-4">
+        <% if (courses && courses.length > 0) { %>
+            <% courses.forEach(kh => { 
+                let giaHienTai = Number(kh.Gia_Tien);
+            %>
+            <div class="col-lg-4 col-md-6">
+                <div class="course-card d-flex flex-column">
+                    <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80" class="course-img" alt="Khóa học">
+                    
+                    <h3 class="course-title"><%= kh.Ten_Khoa_Hoc %></h3>
+                    
+                    <div class="rating-box">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                        <span>(328) 36,826 Học viên</span>
+                    </div>
+                    
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="price-current text-success fw-bold fs-5"><%= giaHienTai.toLocaleString() %>đ</span>
+                    </div>
+
+                    
+                    <div class="row g-2 mt-auto">
+                        <div class="col-6">
+                            <a href="/khoa-hoc/<%= kh.MaKH %>" class="btn btn-outline-primary w-100 fw-bold">Chi tiết</a>
+                        </div>
+                        <div class="col-6">
+                            
+                            <form action="/them-vao-gio/<%= kh.MaKH %>" method="POST" class="m-0 cart-form">
+                                <button type="submit" class="btn btn-primary w-100 fw-bold">
+                                    <i class="fa-solid fa-cart-plus"></i> Thêm
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% }) %>
+        <% } else { %>
+            <div class="text-center w-100 py-5 text-muted">Hệ thống chưa có khóa học nào.</div>
+        <% } %>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const cartForms = document.querySelectorAll('form[action^="/them-vao-gio/"]');
+            cartForms.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault(); 
+                    const url = this.getAttribute('action');
+                    try {
+                        const response = await fetch(url, { method: 'POST' });
+                        if (response.redirected) { window.location.href = response.url; return; }
+                        const data = await response.json();
+                        Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true }).fire({ icon: data.status, title: data.message });
+                    } catch (error) { Swal.fire('Lỗi', 'Không thể kết nối đến máy chủ', 'error'); }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

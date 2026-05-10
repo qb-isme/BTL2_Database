@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard | EduManage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 70px;}
+        .navbar-custom { background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: 70px; }
+        
+        /* Banner & Avatar */
+        .cover-photo { height: 180px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border-radius: 0 0 10px 10px; width: 100%; object-fit: cover;}
+        .profile-header { text-align: center; margin-top: -60px; margin-bottom: 30px; }
+        .avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid white; background-color: white; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+        
+        /* Tabs */
+        .nav-tabs { border-bottom: 1px solid #dee2e6; justify-content: center; margin-bottom: 20px;}
+        .nav-tabs .nav-link { color: #6b7280; font-weight: 600; border: none; padding: 10px 20px; margin: 0 10px; cursor: pointer; transition: 0.3s;}
+        .nav-tabs .nav-link.active { color: #1e3a8a; border-bottom: 3px solid #1e3a8a; background: transparent; }
+        .nav-tabs .nav-link:hover { color: #1e3a8a; }
+
+        /* Cards & Tables */
+        .admin-card { background: white; border-radius: 12px; border: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 25px; margin-bottom: 25px; }
+        .table-custom { border-collapse: separate; border-spacing: 0; }
+        .table-custom thead th { background-color: #f8f9fa; color: #495057; font-weight: 700; border-bottom: 2px solid #dee2e6; padding: 15px; border-top: none; }
+        .table-custom tbody td { vertical-align: middle; padding: 15px; border-bottom: 1px solid #f1f3f5; }
+        
+        /* Action Widgets */
+        .widget-card { cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; border-radius: 12px;}
+        .widget-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-color: #1e3a8a;}
+
+        /* Question Blocks */
+        .question-block { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; margin-bottom: 20px; position: relative;}
+        .btn-remove-question { position: absolute; top: 15px; right: 15px; color: #ef4444; cursor: pointer; transition: 0.2s;}
+        .btn-remove-question:hover { color: #dc2626; transform: scale(1.1);}
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg fixed-top navbar-custom">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold fs-4" href="/admin" style="color: #1e3a8a;"><i class="fa-solid fa-shield-halved me-2"></i>EduManage Admin</a>
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item"><a class="nav-link text-primary fw-bold" href="/">← Ra trang chủ học viên</a></li>
+                    <li class="nav-item dropdown ms-3">
+                        <a class="nav-link text-dark dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <img src="https://ui-avatars.com/api/?name=<%= user.Ho_Ten || 'Admin' %>&background=dc3545&color=fff&rounded=true&size=32" alt="Avatar">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item text-danger" href="/logout"><i class="fa-solid fa-right-from-bracket me-1"></i> Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 1200px;">
+        <div class="cover-photo d-flex align-items-center justify-content-center text-white"></div>
+        <div class="profile-header">
+            <img src="https://ui-avatars.com/api/?name=<%= user.Ho_Ten || 'Admin' %>&background=dc3545&color=fff&size=120" alt="Avatar" class="avatar">
+            <h3 class="fw-bold mt-2 mb-1"><%= user.Ho_Ten || 'Ban Quản Trị' %> <span class="badge bg-danger ms-2" style="font-size: 0.8rem; vertical-align: middle;"><i class="fa-solid fa-star me-1"></i>Administrator</span></h3>
+        </div>
+
+        <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+            <li class="nav-item"><button class="nav-link active" id="manage-tab" data-bs-toggle="tab" data-bs-target="#manage-pane" type="button"><i class="fa-solid fa-book-open me-2"></i>Quản lý Khóa học</button></li>
+            <li class="nav-item"><button class="nav-link" id="exam-tab" data-bs-toggle="tab" data-bs-target="#exam-pane" type="button"><i class="fa-solid fa-file-signature me-2"></i>Quản lý Đề Thi</button></li>
+            <li class="nav-item"><button class="nav-link" id="tools-tab" data-bs-toggle="tab" data-bs-target="#tools-pane" type="button"><i class="fa-solid fa-chart-pie me-2"></i>Thống kê & Công cụ</button></li>
+        </ul>
+
+        <div class="tab-content mt-4 mb-5" id="adminTabsContent">
+            
+            <!-- TAB 1: QUẢN LÝ KHÓA HỌC -->
+            <div class="tab-pane fade show active" id="manage-pane" role="tabpanel">
+                <div class="admin-card">
+                    <h5 class="mb-4 fw-bold text-primary border-bottom pb-3">
+                        <i class="fa-solid <%= editData ? 'fa-pen-to-square' : 'fa-plus-circle' %> me-2"></i>
+                        <%= editData ? 'Cập Nhật Khóa Học' : 'Thêm Khóa Học Mới' %>
+                    </h5>
+                    <form action="/luu-khoa-hoc" method="POST">
+                        <input type="hidden" name="isEdit" value="<%= editData ? 'true' : 'false' %>">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-2">
+                                <label class="text-muted small fw-bold mb-1">Mã KH</label>
+                                <input type="text" name="makh" class="form-control" value="<%= editData ? editData.MaKH : '' %>" <%= editData ? 'readonly' : 'required' %>>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="text-muted small fw-bold mb-1">Mã GV</label>
+                                <input type="text" name="magv" class="form-control" value="<%= editData ? editData.MaGV : '' %>">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="text-muted small fw-bold mb-1">Tên Khóa Học</label>
+                                <input type="text" name="tenkhoahoc" class="form-control" value="<%= editData ? editData.Ten_Khoa_Hoc : '' %>" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="text-muted small fw-bold mb-1">Giá Tiền (VNĐ)</label>
+                                <input type="number" name="giatien" class="form-control" value="<%= editData ? editData.Gia_Tien : '' %>" required>
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6"><label class="text-muted small fw-bold mb-1">Mô Tả</label><textarea name="mota" class="form-control" rows="2"><%= editData ? editData.Mo_Ta : '' %></textarea></div>
+                            <div class="col-md-6"><label class="text-muted small fw-bold mb-1">Lộ Trình</label><textarea name="lotrinh" class="form-control" rows="2"><%= editData ? editData.Lo_Trinh : '' %></textarea></div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4"><i class="fa-solid fa-floppy-disk me-2"></i><%= editData ? 'Lưu Cập Nhật' : 'Xác Nhận Thêm' %></button>
+                            <% if (editData) { %> <a href="/admin" class="btn btn-light border">Hủy Sửa</a> <% } %>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="admin-card">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                        <h5 class="fw-bold m-0 text-dark"><i class="fa-solid fa-list me-2"></i>Danh sách Khóa học hiện hành</h5>
+                        <form action="/admin" method="GET" class="input-group" style="width: 350px;">
+                            <input type="text" name="keyword" class="form-control bg-light" placeholder="Tìm theo Mã, Tên KH..." value="<%= searchKeyword %>">
+                            <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom mb-0">
+                            <thead>
+                                <tr><th>Mã KH</th><th>Giảng Viên</th><th>Tên Khóa Học</th><th>Giá Tiền</th><th class="text-center">Hành động</th></tr>
+                            </thead>
+                            <tbody>
+                                <% if (courses && courses.length > 0) { %>
+                                    <% courses.forEach(kh => { %>
+                                    <tr>
+                                        <td class="fw-bold text-primary"><%= kh.MaKH %></td>
+                                        <td><%= kh.MaGV || kh.Ten_Giang_Vien || '--' %></td>
+                                        <td class="fw-medium"><%= kh.Ten_Khoa_Hoc %></td>
+                                        <td><span class="badge bg-success bg-opacity-10 text-success fs-6"><%= Number(kh.Gia_Tien).toLocaleString() %> đ</span></td>
+                                        <td class="text-center">
+                                            <a href="/admin?edit=<%= kh.MaKH %>" class="btn btn-sm btn-outline-primary rounded-circle p-2 me-1" title="Sửa"><i class="fa-solid fa-pen"></i></a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Xóa" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<%= kh.MaKH %>"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr><td colspan="5" class="text-center py-5 text-muted">Không tìm thấy khóa học nào.</td></tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: QUẢN LÝ ĐỀ THI -->
+            <div class="tab-pane fade" id="exam-pane" role="tabpanel">
+                <div class="admin-card mb-4">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                        <h5 class="fw-bold m-0 text-dark"><i class="fa-solid fa-list me-2"></i>Thư viện Đề Thi</h5>
+                        <button class="btn btn-primary btn-sm" onclick="scrollToForm()"><i class="fa-solid fa-plus me-1"></i>Tạo đề mới</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-custom mb-0">
+                            <thead>
+                                <tr><th>Mã Đề</th><th>Tên Đề Thi</th><th>Thời Gian</th><th>Thang Điểm</th><th class="text-center">Hành động</th></tr>
+                            </thead>
+                            <tbody>
+                                <% if (typeof exams !== 'undefined' && exams.length > 0) { %>
+                                    <% exams.forEach(d => { %>
+                                    <tr>
+                                        <td class="fw-bold text-primary"><%= d.MaDe %></td>
+                                        <td class="fw-medium"><%= d.Ten_De %></td>
+                                        <td><span class="badge bg-secondary"><%= d.Tong_Thoi_Gian %></span></td>
+                                        <td><b class="text-success"><%= d.Thang_Diem_Toi_Da %></b></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary rounded-circle p-2 me-1" onclick="loadEditExam('<%= d.MaDe %>')" title="Sửa đề"><i class="fa-solid fa-pen"></i></button>
+                                            <button class="btn btn-sm btn-outline-danger rounded-circle p-2" onclick="deleteExam('<%= d.MaDe %>')" title="Xóa đề"><i class="fa-solid fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr><td colspan="5" class="text-center py-4 text-muted">Chưa có đề thi nào trong hệ thống.</td></tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-card mx-auto" id="examFormCard" style="max-width: 900px; border-top: 4px solid #1e3a8a;">
+                    <h5 class="mb-4 fw-bold text-primary border-bottom pb-3" id="examFormTitle"><i class="fa-solid fa-folder-plus me-2"></i> Thêm Đề Thi Mới</h5>
+                    <input type="hidden" id="editMaDe" value="">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12"><label class="form-label fw-bold small text-muted">Tên Đề Thi</label><input type="text" id="tenDe" class="form-control" placeholder="Ví dụ: Đề kiểm tra..." required></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small text-muted">Thời gian (Phút)</label><input type="number" id="thoiGian" class="form-control" value="45" min="1" required></div>
+                        <div class="col-md-6"><label class="form-label fw-bold small text-muted">Thang điểm</label><input type="number" id="thangDiem" class="form-control" value="10" min="1" required></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+                        <h6 class="fw-bold m-0 text-dark">Nội dung Câu hỏi</h6>
+                        <button class="btn btn-sm btn-success" id="btnAddQuestion"><i class="fa-solid fa-plus me-1"></i>Thêm Câu Hỏi</button>
+                    </div>
+                    
+                    <div id="questionsContainer"></div>
+
+                    <div class="row g-2 mt-3">
+                        <div class="col-12 col-md-8"><button class="btn btn-primary w-100 py-3 fw-bold fs-5 shadow-sm" id="btnLuuDeThi"><i class="fa-solid fa-floppy-disk me-2"></i>LƯU ĐỀ THI</button></div>
+                        <div class="col-12 col-md-4"><button class="btn btn-light border w-100 py-3 fw-bold fs-5 d-none" id="btnHuySuaDe" onclick="resetExamForm()">HỦY SỬA</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: THỐNG KÊ & CÔNG CỤ -->
+            <div class="tab-pane fade" id="tools-pane" role="tabpanel">
+                <div class="row g-4 justify-content-center">
+                    <div class="col-md-5">
+                        <div class="widget-card bg-white p-4 text-center h-100 shadow-sm" data-bs-toggle="modal" data-bs-target="#revenueModal">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-3" style="width: 70px; height: 70px;"><i class="fa-solid fa-chart-line fs-2"></i></div>
+                            <h5 class="fw-bold">Thống Kê Doanh Thu</h5>
+                            <p class="text-muted small">Báo cáo tổng doanh thu các khóa học dựa trên hóa đơn đã thanh toán.</p>
+                            <button class="btn btn-outline-success mt-2 px-4 rounded-pill">Xem Báo Cáo</button>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="widget-card bg-white p-4 text-center h-100 shadow-sm" data-bs-toggle="modal" data-bs-target="#studentModal">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle mb-3" style="width: 70px; height: 70px;"><i class="fa-solid fa-medal fs-2"></i></div>
+                            <h5 class="fw-bold">Tra Cứu Học Lực</h5>
+                            <p class="text-muted small">Quy đổi điểm thi động theo hệ 10 và xếp loại học viên.</p>
+                            <button class="btn btn-outline-warning mt-2 px-4 rounded-pill">Mở Công Cụ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Modal Doanh Thu -->
+    <div class="modal fade" id="revenueModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white border-0"><h5 class="modal-title fw-bold"><i class="fa-solid fa-chart-pie me-2"></i>Thống kê Doanh thu Khóa học</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body p-0">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="table-light"><tr><th>Mã KH</th><th>Tên Khóa Học</th><th class="text-end">Tổng Doanh Thu</th></tr></thead>
+                        <tbody>
+                            <% if(typeof revenueData !== 'undefined') { %>
+                                <% revenueData.forEach(item => { %>
+                                <tr><td class="fw-bold"><%= item.MaKH %></td><td><%= item.Ten_Khoa_Hoc %></td><td class="text-end text-success fw-bold"><%= Number(item.DoanhThu).toLocaleString() %> đ</td></tr>
+                                <% }) %>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Tra cứu học viên -->
+    <div class="modal fade" id="studentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-warning text-dark border-0">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-medal me-2"></i>Tra Cứu Xếp Loại Học Viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="input-group mb-4 shadow-sm">
+                        <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                        <input type="text" id="searchStudentInput" class="form-control form-control-lg border-start-0" placeholder="Nhập mã hoặc tên học viên để tìm...">
+                    </div>
+                    <div class="table-responsive border rounded" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover mb-0 align-middle">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                                <tr><th class="ps-4">Mã HV</th><th>Họ Tên</th><th>Kết quả Xếp loại</th></tr>
+                            </thead>
+                            <tbody>
+                                <% if (typeof students !== 'undefined' && students.length > 0) { %>
+                                    <% students.forEach(s => { %>
+                                        <tr class="student-row">
+                                            <td class="ps-4 fw-bold text-primary student-id"><%= s.MaHV %></td>
+                                            <td class="fw-medium student-name"><%= s.Ho_Ten %></td>
+                                            <td>
+                                                <% if(s.XepLoai && s.XepLoai.includes('Chưa có')) { %> <span class="badge bg-secondary px-3 py-2"><%= s.XepLoai %></span>
+                                                <% } else if(s.XepLoai && s.XepLoai.includes('Cần Cố Gắng')) { %> <span class="badge bg-danger px-3 py-2"><%= s.XepLoai %></span>
+                                                <% } else { %> <span class="badge bg-success px-3 py-2"><%= s.XepLoai %></span> <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr><td colspan="3" class="text-center text-muted py-4">Chưa có dữ liệu học viên.</td></tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xóa Khóa học -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form id="deleteForm" method="POST" action="">
+                    <div class="modal-header bg-danger text-white border-0"><h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation me-2"></i>Xác nhận xóa khóa học</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="text-danger mb-3"><i class="fa-regular fa-circle-xmark" style="font-size: 60px;"></i></div>
+                        <h5>Xóa khóa học <strong id="deleteCourseId" class="text-danger"></strong>?</h5>
+                        <p class="text-muted small mt-2 mb-0">Hành động này không thể hoàn tác.</p>
+                    </div>
+                    <div class="modal-footer bg-light border-0 justify-content-center py-3"><button type="button" class="btn btn-light px-4 border" data-bs-dismiss="modal">Hủy</button><button type="submit" class="btn btn-danger px-4 shadow-sm">Xác nhận Xóa</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        const questionsContainer = document.getElementById('questionsContainer');
+        let questionCount = 0;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Modal Xóa KH
+            const deleteModal = document.getElementById('deleteModal');
+            if (deleteModal) {
+                deleteModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget; 
+                    const courseId = button.getAttribute('data-id'); 
+                    document.getElementById('deleteCourseId').textContent = courseId;
+                    document.getElementById('deleteForm').action = '/xoa-khoa-hoc/' + courseId;
+                });
+            }
+
+            // Lọc Học viên
+            const searchStudentInput = document.getElementById('searchStudentInput');
+            if (searchStudentInput) {
+                searchStudentInput.addEventListener('input', function(e) {
+                    const text = e.target.value.toLowerCase().trim();
+                    const rows = document.querySelectorAll('.student-row');
+                    rows.forEach(row => {
+                        const id = row.querySelector('.student-id').textContent.toLowerCase();
+                        const name = row.querySelector('.student-name').textContent.toLowerCase();
+                        row.style.display = (id.includes(text) || name.includes(text)) ? '' : 'none';
+                    });
+                });
+            }
+
+            // Gắn sự kiện nút Đề thi
+            document.getElementById('btnAddQuestion').addEventListener('click', () => window.addQuestionBlock());
+            window.addQuestionBlock(); // Chạy câu đầu tiên
+        });
+
+        // ---------------- CÁC HÀM XỬ LÝ ĐỀ THI ---------------- //
+        
+        // 1. HÀM TỰ ĐỘNG ĐÁNH LẠI SỐ THỨ TỰ
+        window.updateQuestionNumbers = function() {
+            const titles = document.querySelectorAll('.question-block .question-title');
+            titles.forEach((title, index) => {
+                // Tự động đánh số lại từ 1 dựa trên vị trí thực tế
+                title.innerHTML = `<i class="fa-regular fa-comment-dots me-2"></i>Câu hỏi ${index + 1}`;
+            });
+        };
+
+        // 2. HÀM THÊM Ô CÂU HỎI MỚI
+        window.addQuestionBlock = function(qData = null) {
+            const div = document.createElement('div');
+            div.className = 'question-block shadow-sm';
+            
+            const noiDung = qData ? qData.Noi_Dung : '';
+            const dapAn = qData ? qData.Dap_An : 'A';
+            const optA = qData ? qData.A : '';
+            const optB = qData ? qData.B : '';
+            const optC = qData ? qData.C : '';
+            const optD = qData ? qData.D : '';
+
+            div.innerHTML = `
+                <i class="fa-solid fa-circle-xmark fs-5 btn-remove-question" onclick="this.parentElement.remove(); window.updateQuestionNumbers();" title="Xóa câu này"></i>
+                <h6 class="fw-bold text-primary mb-3 question-title"><i class="fa-regular fa-comment-dots me-2"></i>Câu hỏi</h6>
+                <div class="mb-3"><textarea class="form-control question-content" rows="2" placeholder="Nhập nội dung câu hỏi..." required>${noiDung}</textarea></div>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6"><div class="input-group"><span class="input-group-text bg-light fw-bold">A</span><input type="text" class="form-control opt-a" placeholder="Nội dung phương án A..." value="${optA}" required></div></div>
+                    <div class="col-md-6"><div class="input-group"><span class="input-group-text bg-light fw-bold">B</span><input type="text" class="form-control opt-b" placeholder="Nội dung phương án B..." value="${optB}" required></div></div>
+                    <div class="col-md-6"><div class="input-group"><span class="input-group-text bg-light fw-bold">C</span><input type="text" class="form-control opt-c" placeholder="Nội dung phương án C..." value="${optC}" required></div></div>
+                    <div class="col-md-6"><div class="input-group"><span class="input-group-text bg-light fw-bold">D</span><input type="text" class="form-control opt-d" placeholder="Nội dung phương án D..." value="${optD}" required></div></div>
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-auto"><label class="fw-bold text-muted small">Đáp án đúng:</label></div>
+                    <div class="col-auto">
+                        <select class="form-select border-primary text-primary fw-bold question-answer">
+                            <option value="A" ${dapAn === 'A' ? 'selected' : ''}>A</option><option value="B" ${dapAn === 'B' ? 'selected' : ''}>B</option><option value="C" ${dapAn === 'C' ? 'selected' : ''}>C</option><option value="D" ${dapAn === 'D' ? 'selected' : ''}>D</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            document.getElementById('questionsContainer').appendChild(div);
+            
+            // Gọi hàm đánh số lại ngay sau khi thêm xong
+            window.updateQuestionNumbers(); 
+        };
+
+        window.scrollToForm = function() { document.getElementById('examFormCard').scrollIntoView({ behavior: 'smooth' }); };
+
+        window.resetExamForm = function() {
+            document.getElementById('editMaDe').value = ''; document.getElementById('tenDe').value = '';
+            document.getElementById('thoiGian').value = '45'; document.getElementById('thangDiem').value = '10';
+            document.getElementById('questionsContainer').innerHTML = ''; questionCount = 0;
+            window.addQuestionBlock();
+            document.getElementById('examFormTitle').innerHTML = '<i class="fa-solid fa-folder-plus me-2"></i> Thêm Đề Thi Mới';
+            document.getElementById('btnLuuDeThi').innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>LƯU ĐỀ THI';
+            document.getElementById('btnHuySuaDe').classList.add('d-none');
+        };
+
+        window.deleteExam = function(maDe) {
+            Swal.fire({ title: 'Xóa Đề Thi?', text: "Dữ liệu sẽ bị xóa sạch!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Xóa', cancelButtonText: 'Hủy'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch('/admin/xoa-de/' + maDe, { method: 'POST' });
+                        const data = await res.json();
+                        if (data.status === 'success') { Swal.fire('Đã xóa!', data.message, 'success').then(() => location.reload()); } 
+                        else { Swal.fire('Lỗi', data.message, 'error'); }
+                    } catch (e) { Swal.fire('Lỗi', 'Lỗi kết nối', 'error'); }
+                }
+            });
+        };
+
+        window.loadEditExam = async function(maDe) {
+            try {
+                const res = await fetch('/api/de-thi/' + maDe); const data = await res.json();
+                if (data.status === 'success') {
+                    document.getElementById('examFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square me-2"></i> Cập Nhật: <span class="text-danger">' + maDe + '</span>';
+                    document.getElementById('btnLuuDeThi').innerHTML = '<i class="fa-solid fa-check-double me-2"></i>LƯU CẬP NHẬT';
+                    document.getElementById('btnHuySuaDe').classList.remove('d-none');
+                    document.getElementById('editMaDe').value = maDe;
+                    document.getElementById('tenDe').value = data.exam.Ten_De; document.getElementById('thangDiem').value = data.exam.Thang_Diem_Toi_Da;
+                    
+                    const timeParts = data.exam.Tong_Thoi_Gian.split(':');
+                    document.getElementById('thoiGian').value = parseInt(timeParts[0]) * 60 + parseInt(timeParts[1]);
+
+                    document.getElementById('questionsContainer').innerHTML = ''; questionCount = 0;
+                    if (data.questions && data.questions.length > 0) { data.questions.forEach(q => window.addQuestionBlock(q)); } 
+                    else { window.addQuestionBlock(); }
+                    window.scrollToForm();
+                } else { Swal.fire('Lỗi', 'Không tìm thấy dữ liệu', 'error'); }
+            } catch (e) { Swal.fire('Lỗi', 'Lỗi tải dữ liệu!', 'error'); }
+        };
+
+        document.getElementById('btnLuuDeThi').addEventListener('click', async () => {
+            const editMaDe = document.getElementById('editMaDe').value; const tenDe = document.getElementById('tenDe').value.trim();
+            const thoiGian = document.getElementById('thoiGian').value; const thangDiem = document.getElementById('thangDiem').value;
+
+            if (!tenDe) return Swal.fire('Thiếu thông tin', 'Nhập tên đề thi!', 'warning');
+            const questionBlocks = document.querySelectorAll('.question-block');
+            if (questionBlocks.length === 0) return Swal.fire('Thiếu dữ liệu', 'Đề thi phải có ít nhất 1 câu hỏi!', 'warning');
+
+            const questions = []; let isValid = true;
+            questionBlocks.forEach(block => {
+                const noidung = block.querySelector('.question-content').value.trim();
+                const optA = block.querySelector('.opt-a').value.trim(); const optB = block.querySelector('.opt-b').value.trim();
+                const optC = block.querySelector('.opt-c').value.trim(); const optD = block.querySelector('.opt-d').value.trim();
+                const dapan = block.querySelector('.question-answer').value;
+                if (!noidung || !optA || !optB || !optC || !optD) isValid = false;
+                questions.push({ noidung, optA, optB, optC, optD, dapan });
+            });
+
+            if (!isValid) return Swal.fire('Cảnh báo', 'Vui lòng điền đủ câu hỏi và 4 phương án!', 'warning');
+
+            const payload = { tende: tenDe, thoigian: thoiGian, thangdiem: thangDiem, questions: questions };
+            const apiEndpoint = editMaDe ? ('/admin/sua-de/' + editMaDe) : '/admin/tao-de';
+            document.getElementById('btnLuuDeThi').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+
+            try {
+                const response = await fetch(apiEndpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (result.status === 'success') { Swal.fire('Thành công!', result.message, 'success').then(() => location.reload()); } 
+                else { Swal.fire('Lỗi', result.message, 'error'); }
+            } catch (err) { Swal.fire('Lỗi', 'Lỗi máy chủ!', 'error'); } 
+            finally {
+                if (editMaDe) document.getElementById('btnLuuDeThi').innerHTML = '<i class="fa-solid fa-check-double me-2"></i>LƯU CẬP NHẬT';
+                else document.getElementById('btnLuuDeThi').innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>LƯU ĐỀ THI';
+            }
+        });
+    </script>
+</body>
+</html>

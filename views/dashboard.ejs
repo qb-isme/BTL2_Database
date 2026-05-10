@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Học viên | EduManage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding-top: 70px;}
+        .navbar-custom { background-color: #ffffff; box-shadow: 0 2px 10px rgba(0,0,0,0.05); height: 70px; }
+        .cover-photo { height: 180px; background: linear-gradient(135deg, #a6c1ee 0%, #fbc2eb 100%); border-radius: 0 0 10px 10px; width: 100%; object-fit: cover;}
+        .profile-header { text-align: center; margin-top: -60px; margin-bottom: 30px; }
+        .avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid white; background-color: white; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+        .nav-tabs { border-bottom: 1px solid #dee2e6; justify-content: center; margin-bottom: 20px;}
+        .nav-tabs .nav-link { color: #6b7280; font-weight: 600; border: none; padding: 10px 20px; margin: 0 10px; cursor: pointer; }
+        .nav-tabs .nav-link.active { color: #1e3a8a; border-bottom: 3px solid #1e3a8a; background: transparent; }
+        .course-card-dash { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 20px; height: 100%; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.02);}
+        .course-card-dash:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-3px);}
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg fixed-top navbar-custom">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold fs-4" href="/" style="color: #1e3a8a;"><i class="fa-solid fa-graduation-cap me-2"></i>EduManage</a>
+            <div class="collapse navbar-collapse justify-content-end">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="#">Tài khoản luyện thi</a></li>
+                    <li class="nav-item"><a class="nav-link text-primary fw-bold" href="/chuong-trinh-hoc">Chương trình học</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/de-thi">Đề thi online</a></li>
+                    <li class="nav-item dropdown ms-3">
+                        <a class="nav-link text-dark dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <img src="https://ui-avatars.com/api/?name=<%= user.Username %>&background=1e3a8a&color=fff&rounded=true&size=32" alt="Avatar">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item text-danger" href="/logout"><i class="fa-solid fa-right-from-bracket me-1"></i> Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 900px;">
+        <!-- Cover & Profile Header -->
+        <img src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=1200&q=80" alt="Cover" class="cover-photo">
+        <div class="profile-header">
+            <img src="https://ui-avatars.com/api/?name=<%= user.Username %>&background=222&color=fff&size=120" alt="Avatar" class="avatar">
+            <h3 class="fw-bold mt-2 mb-1"><%= user.Username || profile.Ho_Ten %> <span class="badge bg-light text-dark border ms-2" style="font-size: 0.8rem; vertical-align: middle;">Trang học viên</span></h3>
+        </div>
+
+        <!-- CẤU TRÚC CHUYỂN TAB BOOTSTRAP -->
+        <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-pane" type="button" role="tab">Thông tin cá nhân</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="course-tab" data-bs-toggle="tab" data-bs-target="#course-pane" type="button" role="tab">Chương trình luyện thi</button>
+            </li>
+            <!-- THÊM TAB LỊCH SỬ BÀI THI -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab">Lịch sử bài thi</button>
+            </li>
+        </ul>
+
+        <!-- NỘI DUNG CÁC TAB -->
+        <div class="tab-content mt-4 mb-5" id="dashboardTabsContent">
+            
+            <!-- TAB 1: THÔNG TIN CÁ NHÂN & ĐIỂM SỐ -->
+            <div class="tab-pane fade show active" id="profile-pane" role="tabpanel" tabindex="0">
+                <div class="card shadow-sm border-0 mx-auto" style="max-width: 850px;">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-primary fw-bold"><i class="fa-solid fa-address-card me-2"></i>Hồ sơ học viên</h5>
+                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fa-solid fa-pen-to-square me-1"></i>Chỉnh sửa
+                        </button>
+                    </div>
+                    <div class="card-body bg-white rounded-bottom">
+                        <div class="row g-4 px-3 mb-4">
+                            <div class="col-md-6">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item px-0"><span class="text-muted small d-block">Họ và tên</span><strong><%= profile.Ho_Ten || 'Chưa cập nhật' %></strong></li>
+                                    <li class="list-group-item px-0"><span class="text-muted small d-block">Mã Học Viên</span><strong><%= profile.MaND %></strong></li>
+                                    <li class="list-group-item px-0"><span class="text-muted small d-block">Giới tính</span><strong><%= profile.Gioi_Tinh || 'Chưa cập nhật' %></strong></li>
+                                    <li class="list-group-item px-0 border-bottom-0"><span class="text-muted small d-block">Ngày sinh</span><strong><%= profile.Ngay_Sinh ? new Date(profile.Ngay_Sinh).toLocaleDateString('vi-VN') : 'Chưa cập nhật' %></strong></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item px-0"><span class="text-muted small d-block">Email</span><strong><%= profile.Email || 'Chưa cập nhật' %></strong></li>
+                                    <li class="list-group-item px-0"><span class="text-muted small d-block">Số điện thoại</span><strong><%= profile.So_Dien_Thoai || 'Chưa cập nhật' %></strong></li>
+                                    <li class="list-group-item px-0 border-bottom-0"><span class="text-muted small d-block">Địa chỉ</span>
+                                        <strong>
+                                            <%= profile.Duong ? profile.Duong + ', ' : '' %>
+                                            <%= profile.Quan ? profile.Quan + ', ' : '' %>
+                                            <%= profile.Thanh_Pho || 'Chưa cập nhật' %>
+                                        </strong>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- KHU VỰC ĐIỂM SỐ TÁCH BIỆT -->
+                        <div class="row px-3">
+                            <div class="col-12">
+                                <div class="p-3 bg-light rounded border d-flex justify-content-around text-center align-items-center">
+                                    <div class="px-4">
+                                        <div class="text-muted small mb-1">Điểm Trung Bình</div>
+                                        <h4 class="text-primary fw-bold mb-0">
+                                            <%= (locals.academic && academic.DiemTB !== null) ? academic.DiemTB + '/10' : 'Chưa có' %>
+                                        </h4>
+                                    </div>
+                                    <div class="border-start" style="height: 40px;"></div>
+                                    <div class="px-4">
+                                        <div class="text-muted small mb-1">Xếp loại Học lực</div>
+                                        <h4 class="text-success fw-bold mb-0">
+                                            <%= (locals.academic && academic.XepLoai) ? academic.XepLoai : 'Chưa có' %>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: KHÓA HỌC CỦA TÔI -->
+            <div class="tab-pane fade" id="course-pane" role="tabpanel" tabindex="0">
+                <h5 class="fw-bold mb-4" style="color: #1f2937;">Khóa học của tôi</h5>
+                <div class="row g-4">
+                    
+                    
+                    <% if (locals.enrolledCourses && enrolledCourses.length > 0) { %>
+                        <% enrolledCourses.forEach(kh => { %>
+                            <div class="col-md-6">
+                                <a href="/vao-hoc/<%= kh.MaKH %>" class="text-decoration-none text-dark">
+                                    <div class="course-card-dash" style="border-left: 4px solid #10b981;">
+                                        <h6 class="fw-bold mb-3"><%= kh.Ten_Khoa_Hoc %> <span class="badge bg-success ms-2">Đã đăng ký</span></h6>
+                                        <div class="text-muted small mb-1">0%</div>
+                                        <div class="progress mb-3" style="height: 6px;"><div class="progress-bar bg-success" style="width: 0%"></div></div>
+                                        <div class="small text-dark"><strong>Trạng thái:</strong> Sẵn sàng học</div>
+                                    </div>
+                                </a>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <!-- Giao diện khi học viên chưa mua khóa nào -->
+                        <div class="col-12 text-center py-5">
+                            <i class="fa-solid fa-book-open text-muted opacity-25 mb-3" style="font-size: 50px;"></i>
+                            <h5 class="text-muted fw-bold">Bạn chưa có khóa học nào</h5>
+                            <p class="text-muted small mb-4">Hãy đăng ký khóa học để bắt đầu hành trình chinh phục kiến thức nhé!</p>
+                            <a href="/chuong-trinh-hoc" class="btn btn-primary px-4 rounded-pill">Khám phá khóa học ngay</a>
+                        </div>
+                    <% } %>
+
+                </div>
+            </div>
+
+            <!-- TAB 3: LỊCH SỬ BÀI THI -->
+            <div class="tab-pane fade" id="history-pane" role="tabpanel" tabindex="0">
+                <div class="card shadow-sm border-0 mx-auto" style="max-width: 850px;">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                        <h5 class="mb-0 text-primary fw-bold"><i class="fa-solid fa-clock-rotate-left me-2"></i>Lịch sử các bài thi đã làm</h5>
+                    </div>
+                    <div class="card-body bg-white rounded-bottom px-4 pb-4">
+                        <% if (locals.examHistory && examHistory.length > 0) { %>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mt-2">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>Tên đề thi</th>
+                                            <th>Ngày làm bài</th>
+                                            <th>Điểm số</th>
+                                            <th>Đánh giá</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% examHistory.forEach((history, index) => { 
+                                            // Chỉnh ngày tháng format đẹp
+                                            let d = new Date(history.Ngay_Lam);
+                                            let dateStr = ("0" + d.getDate()).slice(-2) + "/" + ("0"+(d.getMonth()+1)).slice(-2) + "/" + d.getFullYear();
+                                            
+                                            // Tính tỷ lệ phần trăm để đánh giá và tô màu
+                                            let maxScore = history.Thang_Diem_Toi_Da || 10;
+                                            let tiLe = (history.Diem_So / maxScore) * 100;
+                                            let color = tiLe >= 80 ? 'success' : (tiLe >= 50 ? 'warning' : 'danger');
+                                        %>
+                                            <tr>
+                                                <td class="text-muted fw-bold"><%= index + 1 %></td>
+                                                <td class="fw-bold text-dark"><%= history.Ten_De %></td>
+                                                <td><%= dateStr %></td>
+                                                <td>
+                                                    <span class="fs-6 fw-bold text-<%= color %>"><%= history.Diem_So %></span> 
+                                                    <span class="text-muted small">/ <%= maxScore %></span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-<%= color %>-subtle text-<%= color %> border border-<%= color %>">
+                                                        <%= tiLe >= 80 ? 'Xuất sắc' : (tiLe >= 50 ? 'Đạt' : 'Cần cố gắng') %>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <% } else { %>
+                            <!-- Giao diện khi chưa có bài thi nào -->
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-file-circle-xmark text-muted opacity-25 mb-3" style="font-size: 50px;"></i>
+                                <h6 class="text-muted fw-bold">Chưa có lịch sử làm bài</h6>
+                                <p class="text-muted small mb-4">Bạn chưa hoàn thành bài thi nào. Hãy thử sức ngay!</p>
+                                <a href="/de-thi" class="btn btn-outline-primary btn-sm px-4 rounded-pill">Đến Thư viện Đề thi</a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL CHỈNH SỬA THÔNG TIN CÁ NHÂN -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form action="/cap-nhat-thong-tin" method="POST">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="fa-solid fa-user-pen me-2"></i>Cập nhật Hồ sơ</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Họ và tên</label>
+                                <input type="text" class="form-control" name="hoten" value="<%= profile.Ho_Ten %>" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Email</label>
+                                <input type="email" class="form-control" name="email" value="<%= profile.Email %>">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold">Số điện thoại</label>
+                                <input type="text" class="form-control" name="sdt" pattern="[0-9]{10}" maxlength="10" title="Vui lòng nhập đúng 10 chữ số"value="<%= profile.So_Dien_Thoai %>">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold">Giới tính</label>
+                                <select class="form-select" name="gioitinh">
+                                    <option value="Nam" <%= profile.Gioi_Tinh === 'Nam' ? 'selected' : '' %>>Nam</option>
+                                    <option value="Nữ" <%= profile.Gioi_Tinh === 'Nữ' ? 'selected' : '' %>>Nữ</option>
+                                    <option value="Khác" <%= profile.Gioi_Tinh === 'Khác' ? 'selected' : '' %>>Khác</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small fw-bold">Ngày sinh</label>
+                                <% const formattedDate = profile.Ngay_Sinh ? new Date(profile.Ngay_Sinh).toISOString().split('T')[0] : ''; %>
+                                <input type="date" class="form-control" name="ngaysinh" value="<%= formattedDate %>">
+                            </div>
+                            
+                            <div class="col-12 mt-4"><h6 class="border-bottom pb-2 fw-bold text-primary">Địa chỉ liên hệ</h6></div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Thành phố / Tỉnh</label>
+                                <input type="text" class="form-control" name="thanhpho" value="<%= profile.Thanh_Pho %>">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Quận / Huyện</label>
+                                <input type="text" class="form-control" name="quan" value="<%= profile.Quan %>">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label text-muted small">Tên đường, số nhà</label>
+                                <input type="text" class="form-control" name="duong" value="<%= profile.Duong %>">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS cho Tabs và Modal -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
